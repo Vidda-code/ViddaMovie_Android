@@ -1,4 +1,4 @@
-package com.example.viddamovie.ui.screens
+package com.example.viddamovie.ui.screens.upcoming
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
