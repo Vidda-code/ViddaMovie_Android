@@ -68,5 +68,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
 
     // Icons
-    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+    // Retrofit (Network Library)
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
+    // Coil (Image Loader)
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
 }
