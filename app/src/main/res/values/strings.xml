@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">ViddaMovie</string>
+
+    <!--Buttons-->
+    <string name="play">Play</string>
+    <string name="download">Download</string>
+
+    <!--Titles-->
+    <string name="trending_movie">Trending Movies</string>
+    <string name="trending_tv">Trending TV</string>
+    <string name="top_rated_movie">Top Rated Movies</string>
+    <string name="top_rated_tv">Top Rated TV</string>
+    <string name="movie_search">Movie Search</string>
+    <string name="tv_search">TV Search</string>
+
+    <!--PlaceHolders-->
+    <string name="movie_placeholder">Search for a Movie</string>
+    <string name="tv_placeholder">Search for a TV Show</string>
 </resources>
