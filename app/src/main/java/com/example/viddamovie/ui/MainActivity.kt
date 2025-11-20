@@ -1,4 +1,4 @@
-package com.example.viddamovie.ui.screens
+package com.example.viddamovie.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.viddamovie.ui.navigation.AppNavigation
 import com.example.viddamovie.ui.theme.ViddaMovieTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
