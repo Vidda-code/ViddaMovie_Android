@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.25"
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -76,5 +79,12 @@ dependencies {
 
     // Coil (Image Loader)
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Dagger Hilt (Dependency Injection)
+    implementation("com.google.dagger:hilt-android:2.51")
+    kapt("com.google.dagger:hilt-compiler:2.51")
+
+    // Hilt Navigation Compose (for hiltViewModel())
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
 }
