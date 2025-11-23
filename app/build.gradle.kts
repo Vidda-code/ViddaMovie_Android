@@ -11,9 +11,7 @@ plugins {
 
 android {
     namespace = "com.example.viddamovie"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.viddamovie"
@@ -81,8 +79,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Dagger Hilt (Dependency Injection)
-    implementation("com.google.dagger:hilt-android:2.51")
-    kapt("com.google.dagger:hilt-compiler:2.51")
+    implementation("com.google.dagger:hilt-android:2.57.2")
+    kapt("com.google.dagger:hilt-compiler:2.57.2")
 
     // Hilt Navigation Compose (for hiltViewModel())
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
