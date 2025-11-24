@@ -24,7 +24,7 @@ fun TitleDto.toDomain(): Title? {
     )
 }
 
-fun List<TitleDto>.toDomain(): List<Title> {
+fun List<TitleDto>.toDomainFromDto(): List<Title> {
     return this.mapNotNull { it.toDomain() }
     // mapNotNull = map + filter out nulls
 }
@@ -58,6 +58,6 @@ fun TitleEntity.toDomain(): Title {
     )
 }
 
-fun List<TitleEntity>.toDomain(): List<Title> {
+fun List<TitleEntity>.toDomainFromEntity(): List<Title> {
     return this.map { it.toDomain() }
 }

@@ -2,6 +2,8 @@ package com.example.viddamovie.data.repository
 
 import com.example.viddamovie.data.local.TitleDao
 import com.example.viddamovie.data.mapper.toDomain
+import com.example.viddamovie.data.mapper.toDomainFromDto
+import com.example.viddamovie.data.mapper.toDomainFromEntity
 import com.example.viddamovie.data.mapper.toEntity
 import com.example.viddamovie.data.remote.TmdbApiService
 import com.example.viddamovie.data.remote.YoutubeApiService
@@ -33,52 +35,75 @@ class TitleRepositoryImpl @Inject constructor(
     private val apiConfig: ApiConfig
 ) : TitleRepository {
 
+    /**
+     * Get trending movies from TMDB API
+     *
+     * iOS Equivalent:
+     * ```swift
+     * trendingMovies = try await dataFetcher.fetchTitles(
+     *     for: "movie",
+     *     by: "trending"
+     * )
+     * ```
+     */
     override suspend fun getTrendingMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTrending(
                 media = "movie",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomain()  // Convert DTO → Domain
+            response.results.toDomainFromDto()  // Convert DTO → Domain
         }
     }
 
+    /**
+     * Get trending TV shows
+     */
     override suspend fun getTrendingTV(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTrending(
                 media = "tv",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomain()
+            response.results.toDomainFromDto()
         }
     }
 
+    /**
+     * Get top rated movies
+     */
     override suspend fun getTopRatedMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTopRated(
                 media = "movie",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomain()
+            response.results.toDomainFromDto()
         }
     }
 
+    /**
+     * Get top rated TV shows
+     */
     override suspend fun getTopRatedTV(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTopRated(
                 media = "tv",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomain()
+            response.results.toDomainFromDto()
         }
     }
 
+    /**
+     * Get upcoming movies
+     */
     override suspend fun getUpcomingMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getUpcoming(
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomain()
+            response.results.toDomainFromDto()
         }
     }
 
@@ -89,7 +114,7 @@ class TitleRepositoryImpl @Inject constructor(
                 apiKey = apiConfig.tmdbApiKey,
                 query = query
             )
-            response.results.toDomain()
+            response.results.toDomainFromDto()
         }
     }
 
@@ -100,7 +125,7 @@ class TitleRepositoryImpl @Inject constructor(
                 apiKey = apiConfig.tmdbApiKey,
                 query = query
             )
-            response.results.toDomain()
+            response.results.toDomainFromDto()
         }
     }
 
@@ -140,7 +165,7 @@ class TitleRepositoryImpl @Inject constructor(
 
     override fun getSavedTitles(): Flow<List<Title>> {
         return titleDao.getAllTitles()
-            .map { entities -> entities.toDomain() }  // Convert Entity → Domain
+            .map { entities -> entities.toDomainFromEntity() }  // Convert Entity → Domain
     }
 
     private suspend fun <T> safeApiCall(
@@ -157,7 +182,6 @@ class TitleRepositoryImpl @Inject constructor(
                         statusCode = e.code(),
                         responseMessage = e.message()
                     )
-
                     else -> NetworkError.Unknown(e.message)
                 }
             )
