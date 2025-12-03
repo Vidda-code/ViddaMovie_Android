@@ -93,4 +93,7 @@ dependencies {
 
     // OkHttp Logging Interceptor (for debugging network calls)
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // YouTube Player (for displaying trailers)
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
 }

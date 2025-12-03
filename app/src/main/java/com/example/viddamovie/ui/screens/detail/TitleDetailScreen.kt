@@ -128,7 +128,6 @@ private fun TitleDetailContent(
                 videoId != null -> {
                     YoutubePlayer(
                         videoId = videoId,
-                        apiConfig = apiConfig,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
