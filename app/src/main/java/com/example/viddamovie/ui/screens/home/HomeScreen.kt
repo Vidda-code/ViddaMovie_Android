@@ -27,17 +27,15 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // 1. Initialize Snackbar Host State and Coroutine Scope
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    // 2. Wrap content in Scaffold to support Snackbar
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Apply standard padding from Scaffold
+                .padding(paddingValues)
         ) {
             when {
                 uiState.isLoading -> {
@@ -51,13 +49,10 @@ fun HomeScreen(
 
                 else -> {
                     HomeContent(uiState = uiState, onTitleClick = { title ->
-                        // Navigate to detail screen
-                        navController.navigate("detail/${title.id}")
+                        // Navigate with media type
+                        navController.navigate("detail/${title.id}/${title.mediaType}")
                     }, onDownloadClick = { title ->
-                        // 3. Save logic
                         viewModel.saveTitle(title)
-
-                        // 4. Show Snackbar feedback
                         scope.launch {
                             snackbarHostState.showSnackbar("Movie added to Downloads")
                         }
@@ -137,7 +132,6 @@ private fun HeroSection(
             .fillMaxWidth()
             .height(600.dp)
     ) {
-        // Hero poster image
         AsyncImage(
             model = title.posterPath,
             contentDescription = title.displayTitle,
@@ -145,7 +139,6 @@ private fun HeroSection(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Gradient overlay (like iOS LinearGradient)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -158,7 +151,6 @@ private fun HeroSection(
                 )
         )
 
-        // Action buttons at bottom
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)

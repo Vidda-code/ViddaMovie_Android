@@ -9,8 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.viddamovie.data.repository.ApiConfig
-import com.example.viddamovie.data.repository.ApiConfigLoader
+import com.example.viddamovie.domain.model.MediaType
 import com.example.viddamovie.ui.screens.detail.TitleDetailScreen
 import com.example.viddamovie.ui.screens.download.DownloadScreen
 import com.example.viddamovie.ui.screens.home.HomeScreen
@@ -48,17 +47,26 @@ fun AppNavigation() {
                 DownloadScreen(navController = navController)
             }
 
-            // Detail screen with title ID argument
+            // Detail screen with title ID and mediaType arguments
             composable(
-                route = "detail/{titleId}",
+                route = "detail/{titleId}/{mediaType}",
                 arguments = listOf(
-                    navArgument("titleId") { type = NavType.IntType }
+                    navArgument("titleId") { type = NavType.IntType },
+                    navArgument("mediaType") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
                 val titleId = backStackEntry.arguments?.getInt("titleId") ?: 0
+                val mediaTypeString = backStackEntry.arguments?.getString("mediaType") ?: "MOVIE"
+                val mediaType = try {
+                    MediaType.valueOf(mediaTypeString)
+                } catch (e: IllegalArgumentException) {
+                    MediaType.MOVIE // Default fallback
+                }
+
                 TitleDetailScreen(
                     titleId = titleId,
-                    navController = navController
+                    navController = navController,
+                    mediaType = mediaType
                 )
             }
         }
