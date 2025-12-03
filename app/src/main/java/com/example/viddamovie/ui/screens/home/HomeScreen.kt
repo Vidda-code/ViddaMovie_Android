@@ -3,12 +3,10 @@ package com.example.viddamovie.ui.screens.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -21,39 +19,50 @@ import com.example.viddamovie.ui.screens.components.GhostButton
 import com.example.viddamovie.ui.screens.components.HorizontalList
 import com.example.viddamovie.ui.screens.components.LoadingIndicator
 import com.example.viddamovie.ui.viewmodel.HomeUiState
-
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    navController: NavController,
-    viewModel: HomeViewModel = hiltViewModel()
+    navController: NavController, viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        when {
-            uiState.isLoading -> {
-                LoadingIndicator()
-            }
+    // 1. Initialize Snackbar Host State and Coroutine Scope
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-            uiState.error != null -> {
-                ErrorMessage(
-                    message = uiState.error ?: "Unknown error",
-                    onRetry = { viewModel.retry() }
-                )
-            }
+    // 2. Wrap content in Scaffold to support Snackbar
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // Apply standard padding from Scaffold
+        ) {
+            when {
+                uiState.isLoading -> {
+                    LoadingIndicator()
+                }
 
-            else -> {
-                HomeContent(
-                    uiState = uiState,
-                    onTitleClick = { title ->
+                uiState.error != null -> {
+                    ErrorMessage(
+                        message = uiState.error ?: "Unknown error", onRetry = { viewModel.retry() })
+                }
+
+                else -> {
+                    HomeContent(uiState = uiState, onTitleClick = { title ->
                         // Navigate to detail screen
                         navController.navigate("detail/${title.id}")
-                    },
-                    onDownloadClick = { title ->
-                        // TODO: Save to downloads
-                    }
-                )
+                    }, onDownloadClick = { title ->
+                        // 3. Save logic
+                        viewModel.saveTitle(title)
+
+                        // 4. Show Snackbar feedback
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Movie added to Downloads")
+                        }
+                    })
+                }
             }
         }
     }
@@ -74,8 +83,7 @@ private fun HomeContent(
                 HeroSection(
                     title = hero,
                     onPlayClick = { onTitleClick(hero) },
-                    onDownloadClick = { onDownloadClick(hero) }
-                )
+                    onDownloadClick = { onDownloadClick(hero) })
             }
         }
 
@@ -91,9 +99,7 @@ private fun HomeContent(
         // Trending TV
         item {
             HorizontalList(
-                header = "Trending TV",
-                titles = uiState.trendingTV,
-                onTitleClick = onTitleClick
+                header = "Trending TV", titles = uiState.trendingTV, onTitleClick = onTitleClick
             )
         }
 
@@ -109,9 +115,7 @@ private fun HomeContent(
         // Top Rated TV
         item {
             HorizontalList(
-                header = "Top Rated TV",
-                titles = uiState.topRatedTV,
-                onTitleClick = onTitleClick
+                header = "Top Rated TV", titles = uiState.topRatedTV, onTitleClick = onTitleClick
             )
         }
 
@@ -148,10 +152,8 @@ private fun HeroSection(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.8f)
-                        ),
-                        startY = 400f
+                            Color.Transparent, Color.Black.copy(alpha = 0.8f)
+                        ), startY = 400f
                     )
                 )
         )
@@ -164,13 +166,11 @@ private fun HeroSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             GhostButton(
-                text = "Play",
-                onClick = onPlayClick
+                text = "Play", onClick = onPlayClick
             )
 
             GhostButton(
-                text = "Download",
-                onClick = onDownloadClick
+                text = "Download", onClick = onDownloadClick
             )
         }
     }

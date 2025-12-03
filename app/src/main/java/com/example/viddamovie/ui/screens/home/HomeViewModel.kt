@@ -2,6 +2,7 @@ package com.example.viddamovie.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.domain.repository.TitleRepository
 import com.example.viddamovie.ui.viewmodel.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,6 +75,12 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun saveTitle(title: Title) {
+        viewModelScope.launch {
+            repository.saveTitle(title)
         }
     }
 
