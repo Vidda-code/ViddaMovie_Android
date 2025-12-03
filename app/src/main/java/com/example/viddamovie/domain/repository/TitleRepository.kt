@@ -1,11 +1,14 @@
 package com.example.viddamovie.domain.repository
 
+import com.example.viddamovie.domain.model.MediaType
 import com.example.viddamovie.domain.model.Title
 import kotlinx.coroutines.flow.Flow
 
 interface TitleRepository {
 
     suspend fun getTrendingMovies(): Result<List<Title>>
+
+    suspend fun getTitleDetails(titleId: Int, mediaType: MediaType): Result<Title>
 
     suspend fun getTrendingTV(): Result<List<Title>>
 

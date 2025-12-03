@@ -7,6 +7,7 @@ import com.example.viddamovie.data.mapper.toDomainFromEntity
 import com.example.viddamovie.data.mapper.toEntity
 import com.example.viddamovie.data.remote.TmdbApiService
 import com.example.viddamovie.data.remote.YoutubeApiService
+import com.example.viddamovie.domain.model.MediaType
 import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.domain.repository.TitleRepository
 import com.example.viddamovie.util.Constants
@@ -22,13 +23,26 @@ class TitleRepositoryImpl @Inject constructor(
     private val apiConfig: ApiConfig
 ) : TitleRepository {
 
+    override suspend fun getTitleDetails(titleId: Int, mediaType: MediaType): Result<Title> {
+        return safeApiCall {
+            val response = tmdbApi.getTitleDetails(
+                media = mediaType.value,
+                id = titleId,
+                apiKey = apiConfig.tmdbApiKey
+            )
+            response.toDomain() ?: throw NetworkError.ParseError(
+                jsonString = "Failed to parse title details for ID: $titleId"
+            )
+        }
+    }
+
     override suspend fun getTrendingMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTrending(
                 media = "movie",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomainFromDto()  // Convert DTO → Domain
+            response.results.toDomainFromDto()
         }
     }
 
@@ -109,7 +123,7 @@ class TitleRepositoryImpl @Inject constructor(
 
     override suspend fun saveTitle(title: Title): Result<Unit> {
         return try {
-            val entity = title.toEntity()  // Convert Domain → Entity
+            val entity = title.toEntity()
             titleDao.insertTitle(entity)
             Result.success(Unit)
         } catch (e: Exception) {
@@ -129,7 +143,7 @@ class TitleRepositoryImpl @Inject constructor(
 
     override fun getSavedTitles(): Flow<List<Title>> {
         return titleDao.getAllTitles()
-            .map { entities -> entities.toDomainFromEntity() }  // Convert Entity → Domain
+            .map { entities -> entities.toDomainFromEntity() }
     }
 
     private suspend fun <T> safeApiCall(

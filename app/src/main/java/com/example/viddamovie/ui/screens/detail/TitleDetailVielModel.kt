@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.viddamovie.data.repository.ApiConfig
+import com.example.viddamovie.domain.model.MediaType
 import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.domain.repository.TitleRepository
 import com.example.viddamovie.ui.viewmodel.VideoUiState
@@ -14,17 +15,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * ViewModel for Title Detail screen
- *
- * iOS Equivalent: Part of ViewModel.swift (videoId related code)
- */
 @HiltViewModel
 class TitleDetailViewModel @Inject constructor(
     private val repository: TitleRepository,
-    private val apiConfig: ApiConfig,  // Inject ApiConfig here!
+    private val apiConfig: ApiConfig,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    /**
+     * Title details state
+     */
+    private val _titleState = MutableStateFlow<TitleDetailState>(TitleDetailState.Loading)
+    val titleState: StateFlow<TitleDetailState> = _titleState.asStateFlow()
 
     /**
      * Video ID state for YouTube player
@@ -42,6 +44,28 @@ class TitleDetailViewModel @Inject constructor(
      * API Config for YouTube player
      */
     val youtubeConfig: ApiConfig = apiConfig
+
+    /**
+     * Load title details from API
+     */
+    fun loadTitleDetails(titleId: Int, mediaType: MediaType = MediaType.MOVIE) {
+        viewModelScope.launch {
+            _titleState.value = TitleDetailState.Loading
+
+            repository.getTitleDetails(titleId, mediaType).fold(
+                onSuccess = { title ->
+                    _titleState.value = TitleDetailState.Success(title)
+                    // Auto-load video when title loads successfully
+                    loadVideoId(title.displayTitle)
+                },
+                onFailure = { error ->
+                    _titleState.value = TitleDetailState.Error(
+                        error.message ?: "Failed to load title details"
+                    )
+                }
+            )
+        }
+    }
 
     fun loadVideoId(titleName: String) {
         viewModelScope.launch {
@@ -80,6 +104,12 @@ class TitleDetailViewModel @Inject constructor(
     fun resetSaveState() {
         _saveState.value = SaveState.Idle
     }
+}
+
+sealed class TitleDetailState {
+    object Loading : TitleDetailState()
+    data class Success(val title: Title) : TitleDetailState()
+    data class Error(val message: String) : TitleDetailState()
 }
 
 sealed class SaveState {

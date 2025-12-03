@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.viddamovie.data.repository.ApiConfig
+import com.example.viddamovie.domain.model.MediaType
 import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.ui.screens.components.ErrorMessage
 import com.example.viddamovie.ui.screens.components.GhostButton
@@ -22,49 +23,74 @@ import com.example.viddamovie.ui.viewmodel.VideoUiState
 fun TitleDetailScreen(
     titleId: Int,
     navController: NavController,
+    mediaType: MediaType = MediaType.MOVIE,
     viewModel: TitleDetailViewModel = hiltViewModel()
 ) {
+    val titleState by viewModel.titleState.collectAsState()
     val videoState by viewModel.videoState.collectAsState()
     val saveState by viewModel.saveState.collectAsState()
 
-    // TODO: Load title details from repository using titleId
-    // For now, using a placeholder
-    val title = remember { Title.preview }
-
-    LaunchedEffect(title) {
-        viewModel.loadVideoId(title.displayTitle)
+    // Load title details when screen launches
+    LaunchedEffect(titleId) {
+        viewModel.loadTitleDetails(titleId, mediaType)
     }
 
     // Show save success message
     LaunchedEffect(saveState) {
         if (saveState is SaveState.Success) {
-            // Could show a Snackbar here
             kotlinx.coroutines.delay(2000)
             viewModel.resetSaveState()
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        when (videoState) {
-            is VideoUiState.Loading -> {
+        when (val state = titleState) {
+            is TitleDetailState.Loading -> {
                 LoadingIndicator()
             }
 
-            is VideoUiState.Success -> {
-                val videoId = (videoState as VideoUiState.Success).videoId
-                TitleDetailContent(
-                    title = title,
-                    videoId = videoId,
-                    apiConfig = viewModel.youtubeConfig,  // Get from ViewModel!
-                    onDownloadClick = {
-                        viewModel.saveTitle(title)
-                    },
-                    isSaving = saveState is SaveState.Saving
-                )
+            is TitleDetailState.Success -> {
+                val title = state.title
+                when (val vState = videoState) {
+                    is VideoUiState.Loading -> {
+                        // Show content with loading video
+                        TitleDetailContent(
+                            title = title,
+                            videoId = null,
+                            apiConfig = viewModel.youtubeConfig,
+                            onDownloadClick = { viewModel.saveTitle(title) },
+                            isSaving = saveState is SaveState.Saving,
+                            isLoadingVideo = true
+                        )
+                    }
+
+                    is VideoUiState.Success -> {
+                        TitleDetailContent(
+                            title = title,
+                            videoId = vState.videoId,
+                            apiConfig = viewModel.youtubeConfig,
+                            onDownloadClick = { viewModel.saveTitle(title) },
+                            isSaving = saveState is SaveState.Saving,
+                            isLoadingVideo = false
+                        )
+                    }
+
+                    is VideoUiState.Error -> {
+                        // Show content without video
+                        TitleDetailContent(
+                            title = title,
+                            videoId = null,
+                            apiConfig = viewModel.youtubeConfig,
+                            onDownloadClick = { viewModel.saveTitle(title) },
+                            isSaving = saveState is SaveState.Saving,
+                            isLoadingVideo = false,
+                            videoError = vState.message
+                        )
+                    }
+                }
             }
 
-            is VideoUiState.Error -> {
-                val message = (videoState as VideoUiState.Error).message
+            is TitleDetailState.Error -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -72,15 +98,11 @@ fun TitleDetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    ErrorMessage(message = message)
+                    ErrorMessage(message = state.message)
                     Spacer(modifier = Modifier.height(16.dp))
-                    TitleDetailContentWithoutVideo(
-                        title = title,
-                        onDownloadClick = {
-                            viewModel.saveTitle(title)
-                        },
-                        isSaving = saveState is SaveState.Saving
-                    )
+                    Button(onClick = { viewModel.loadTitleDetails(titleId, mediaType) }) {
+                        Text("Retry")
+                    }
                 }
             }
         }
@@ -90,21 +112,52 @@ fun TitleDetailScreen(
 @Composable
 private fun TitleDetailContent(
     title: Title,
-    videoId: String,
+    videoId: String?,
     apiConfig: ApiConfig,
     onDownloadClick: () -> Unit,
-    isSaving: Boolean
+    isSaving: Boolean,
+    isLoadingVideo: Boolean = false,
+    videoError: String? = null
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        // YouTube Player
+        // YouTube Player or placeholder
         item {
-            YoutubePlayer(
-                videoId = videoId,
-                apiConfig = apiConfig,
-                modifier = Modifier.fillMaxWidth()
-            )
+            when {
+                videoId != null -> {
+                    YoutubePlayer(
+                        videoId = videoId,
+                        apiConfig = apiConfig,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                isLoadingVideo -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                videoError != null -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Trailer not available",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
 
         // Title and overview
@@ -127,6 +180,16 @@ private fun TitleDetailContent(
                         text = date,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                title.voteAverage?.let { rating ->
+                    Text(
+                        text = "Rating: ${String.format("%.1f", rating)}/10",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -160,43 +223,6 @@ private fun TitleDetailContent(
         // Bottom padding
         item {
             Spacer(modifier = Modifier.height(80.dp))
-        }
-    }
-}
-
-@Composable
-private fun TitleDetailContentWithoutVideo(
-    title: Title,
-    onDownloadClick: () -> Unit,
-    isSaving: Boolean
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = title.displayTitle,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = title.overview ?: "No overview available",
-            style = MaterialTheme.typography.bodyMedium
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (isSaving) {
-            CircularProgressIndicator()
-        } else {
-            GhostButton(
-                text = "Download",
-                onClick = onDownloadClick
-            )
         }
     }
 }

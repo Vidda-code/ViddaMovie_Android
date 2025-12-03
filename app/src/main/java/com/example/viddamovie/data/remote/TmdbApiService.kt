@@ -1,5 +1,6 @@
 package com.example.viddamovie.data.remote
 
+import com.example.viddamovie.data.remote.dto.TitleDto
 import com.example.viddamovie.data.remote.dto.TmdbResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -30,4 +31,11 @@ interface TmdbApiService {
         @Query("api_key") apiKey: String,
         @Query("query") query: String
     ): TmdbResponse
+
+    @GET("3/{media}/{id}")
+    suspend fun getTitleDetails(
+        @Path("media") media: String,
+        @Path("id") id: Int,
+        @Query("api_key") apiKey: String
+    ): TitleDto
 }
