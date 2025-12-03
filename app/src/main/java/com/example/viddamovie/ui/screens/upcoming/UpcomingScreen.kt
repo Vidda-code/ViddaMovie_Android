@@ -32,7 +32,7 @@ fun UpcomingScreen(
                 VerticalList(
                     titles = titles,
                     onTitleClick = { title ->
-                        navController.navigate("detail/${title.id}")
+                        navController.navigate("detail/${title.id}/${title.mediaType}")
                     },
                     onDeleteClick = null  // No delete in upcoming
                 )

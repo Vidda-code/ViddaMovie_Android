@@ -62,7 +62,7 @@ fun SearchScreen(
                     SearchResultsGrid(
                         titles = searchResults,
                         onTitleClick = { title ->
-                            navController.navigate("detail/${title.id}")
+                            navController.navigate("detail/${title.id}/${title.mediaType}")
                         }
                     )
                 }

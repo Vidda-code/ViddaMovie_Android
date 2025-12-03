@@ -22,7 +22,7 @@ fun DownloadScreen(
             VerticalList(
                 titles = savedTitles,
                 onTitleClick = { title ->
-                    navController.navigate("detail/${title.id}")
+                    navController.navigate("detail/${title.id}/${title.mediaType}")
                 },
                 onDeleteClick = { title ->
                     viewModel.deleteTitle(title)
