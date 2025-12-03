@@ -18,6 +18,7 @@ import com.example.viddamovie.ui.screens.components.GhostButton
 import com.example.viddamovie.ui.screens.components.LoadingIndicator
 import com.example.viddamovie.ui.screens.components.YoutubePlayer
 import com.example.viddamovie.ui.viewmodel.VideoUiState
+import kotlinx.coroutines.launch
 
 @Composable
 fun TitleDetailScreen(
@@ -30,12 +31,16 @@ fun TitleDetailScreen(
     val videoState by viewModel.videoState.collectAsState()
     val saveState by viewModel.saveState.collectAsState()
 
+    // 1. Initialize Snackbar Host State and Coroutine Scope
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     // Load title details when screen launches
     LaunchedEffect(titleId) {
         viewModel.loadTitleDetails(titleId, mediaType)
     }
 
-    // Show save success message
+    // Show save success message via state (optional if you want to use this instead of manual click)
     LaunchedEffect(saveState) {
         if (saveState is SaveState.Success) {
             kotlinx.coroutines.delay(2000)
@@ -43,65 +48,84 @@ fun TitleDetailScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        when (val state = titleState) {
-            is TitleDetailState.Loading -> {
-                LoadingIndicator()
-            }
+    // 2. Wrap everything in a Scaffold to hold the SnackbarHost
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        // You can add a topBar here if needed, or keep it empty if your design covers it
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // Apply scaffold padding
+        ) {
+            when (val state = titleState) {
+                is TitleDetailState.Loading -> {
+                    LoadingIndicator()
+                }
 
-            is TitleDetailState.Success -> {
-                val title = state.title
-                when (val vState = videoState) {
-                    is VideoUiState.Loading -> {
-                        // Show content with loading video
-                        TitleDetailContent(
-                            title = title,
-                            videoId = null,
-                            apiConfig = viewModel.youtubeConfig,
-                            onDownloadClick = { viewModel.saveTitle(title) },
-                            isSaving = saveState is SaveState.Saving,
-                            isLoadingVideo = true
-                        )
+                is TitleDetailState.Success -> {
+                    val title = state.title
+
+                    // Common download handler to avoid repeating code
+                    val onDownloadHandler = {
+                        viewModel.saveTitle(title)
+                        // 3. Show the Snackbar
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Movie added to Downloads")
+                        }
+                        Unit // Return Unit to match () -> Unit signature
                     }
 
-                    is VideoUiState.Success -> {
-                        TitleDetailContent(
-                            title = title,
-                            videoId = vState.videoId,
-                            apiConfig = viewModel.youtubeConfig,
-                            onDownloadClick = { viewModel.saveTitle(title) },
-                            isSaving = saveState is SaveState.Saving,
-                            isLoadingVideo = false
-                        )
-                    }
+                    when (val vState = videoState) {
+                        is VideoUiState.Loading -> {
+                            TitleDetailContent(
+                                title = title,
+                                videoId = null,
+                                apiConfig = viewModel.youtubeConfig,
+                                onDownloadClick = onDownloadHandler,
+                                isSaving = saveState is SaveState.Saving,
+                                isLoadingVideo = true
+                            )
+                        }
 
-                    is VideoUiState.Error -> {
-                        // Show content without video
-                        TitleDetailContent(
-                            title = title,
-                            videoId = null,
-                            apiConfig = viewModel.youtubeConfig,
-                            onDownloadClick = { viewModel.saveTitle(title) },
-                            isSaving = saveState is SaveState.Saving,
-                            isLoadingVideo = false,
-                            videoError = vState.message
-                        )
+                        is VideoUiState.Success -> {
+                            TitleDetailContent(
+                                title = title,
+                                videoId = vState.videoId,
+                                apiConfig = viewModel.youtubeConfig,
+                                onDownloadClick = onDownloadHandler,
+                                isSaving = saveState is SaveState.Saving,
+                                isLoadingVideo = false
+                            )
+                        }
+
+                        is VideoUiState.Error -> {
+                            TitleDetailContent(
+                                title = title,
+                                videoId = null,
+                                apiConfig = viewModel.youtubeConfig,
+                                onDownloadClick = onDownloadHandler,
+                                isSaving = saveState is SaveState.Saving,
+                                isLoadingVideo = false,
+                                videoError = vState.message
+                            )
+                        }
                     }
                 }
-            }
 
-            is TitleDetailState.Error -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    ErrorMessage(message = state.message)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.loadTitleDetails(titleId, mediaType) }) {
-                        Text("Retry")
+                is TitleDetailState.Error -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        ErrorMessage(message = state.message)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadTitleDetails(titleId, mediaType) }) {
+                            Text("Retry")
+                        }
                     }
                 }
             }
