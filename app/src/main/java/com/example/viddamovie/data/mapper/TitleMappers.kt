@@ -6,7 +6,7 @@ import com.example.viddamovie.domain.model.MediaType
 import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.util.Constants
 
-fun TitleDto.toDomain(): Title? {
+fun TitleDto.toDomain(explicitMediaType: MediaType? = null): Title? {
     // Must have valid ID to be useful
     val validId = id ?: return null
 
@@ -20,12 +20,12 @@ fun TitleDto.toDomain(): Title? {
         backdropPath = backdropPath?.let { Constants.getFullPosterUrl(it) },
         releaseDate = releaseDate,
         voteAverage = voteAverage,
-        mediaType = MediaType.fromString(mediaType)
+        mediaType = explicitMediaType ?: MediaType.fromString(mediaType)
     )
 }
 
-fun List<TitleDto>.toDomainFromDto(): List<Title> {
-    return this.mapNotNull { it.toDomain() }
+fun List<TitleDto>.toDomainFromDto(explicitMediaType: MediaType? = null): List<Title> {
+    return this.mapNotNull { it.toDomain(explicitMediaType) }
     // mapNotNull = map + filter out nulls
 }
 

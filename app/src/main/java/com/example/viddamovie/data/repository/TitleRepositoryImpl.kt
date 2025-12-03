@@ -30,7 +30,7 @@ class TitleRepositoryImpl @Inject constructor(
                 id = titleId,
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.toDomain() ?: throw NetworkError.ParseError(
+            response.toDomain(mediaType) ?: throw NetworkError.ParseError(
                 jsonString = "Failed to parse title details for ID: $titleId"
             )
         }
@@ -42,7 +42,7 @@ class TitleRepositoryImpl @Inject constructor(
                 media = "movie",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.MOVIE)
         }
     }
 
@@ -52,7 +52,7 @@ class TitleRepositoryImpl @Inject constructor(
                 media = "tv",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.TV)
         }
     }
 
@@ -62,7 +62,7 @@ class TitleRepositoryImpl @Inject constructor(
                 media = "movie",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.MOVIE)
         }
     }
 
@@ -72,7 +72,7 @@ class TitleRepositoryImpl @Inject constructor(
                 media = "tv",
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.TV)
         }
     }
 
@@ -81,7 +81,7 @@ class TitleRepositoryImpl @Inject constructor(
             val response = tmdbApi.getUpcoming(
                 apiKey = apiConfig.tmdbApiKey
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.MOVIE)
         }
     }
 
@@ -92,7 +92,7 @@ class TitleRepositoryImpl @Inject constructor(
                 apiKey = apiConfig.tmdbApiKey,
                 query = query
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.MOVIE)
         }
     }
 
@@ -103,7 +103,7 @@ class TitleRepositoryImpl @Inject constructor(
                 apiKey = apiConfig.tmdbApiKey,
                 query = query
             )
-            response.results.toDomainFromDto()
+            response.results.toDomainFromDto(MediaType.TV)
         }
     }
 
