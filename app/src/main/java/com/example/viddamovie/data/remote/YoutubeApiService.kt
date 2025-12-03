@@ -8,6 +8,9 @@ interface YoutubeApiService {
     @GET("search")
     suspend fun searchVideo(
         @Query("q") query: String,
-        @Query("key") apiKey: String
+        @Query("key") apiKey: String,
+        @Query("part") part: String = "snippet",
+        @Query("type") type: String = "video",
+        @Query("maxResults") maxResults: Int = 5
     ): YoutubeSearchResponse
 }

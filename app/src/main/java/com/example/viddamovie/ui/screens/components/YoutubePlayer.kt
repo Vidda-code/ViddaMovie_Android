@@ -17,7 +17,7 @@ fun YoutubePlayer(
     modifier: Modifier = Modifier
 ) {
     // Build YouTube embed URL
-    val embedUrl = "${apiConfig.youtubeBaseURL}/$videoId"
+    val embedUrl = "https://www.youtube.com/embed/$videoId"
 
     AndroidView(
         factory = { context ->
@@ -28,13 +28,25 @@ fun YoutubePlayer(
                 // Allow media playback without user gesture
                 settings.mediaPlaybackRequiresUserGesture = false
 
+                // Enable DOM storage (may help with some YouTube features)
+                settings.domStorageEnabled = true
+
+                // Additional settings for better performance
+                settings.loadWithOverviewMode = true
+                settings.useWideViewPort = true
+
+                // Set background to transparent during loading
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+
                 // Set WebView client
                 webViewClient = WebViewClient()
             }
         },
         update = { webView ->
-            // Load YouTube video
-            webView.loadUrl(embedUrl)
+            // Only load if URL is different (prevents reload on recomposition)
+            if (webView.url != embedUrl) {
+                webView.loadUrl(embedUrl)
+            }
         },
         modifier = modifier
             .fillMaxWidth()
