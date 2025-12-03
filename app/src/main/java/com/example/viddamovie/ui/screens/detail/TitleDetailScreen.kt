@@ -18,44 +18,6 @@ import com.example.viddamovie.ui.screens.components.LoadingIndicator
 import com.example.viddamovie.ui.screens.components.YoutubePlayer
 import com.example.viddamovie.ui.viewmodel.VideoUiState
 
-/**
- * Title Detail Screen with YouTube player
- *
- * iOS Equivalent: TitleDetailView.swift
- * ```swift
- * struct TitleDetailView: View {
- *     @Environment(\.dismiss) var dismiss
- *     let title: Title
- *     let viewModel = ViewModel()
- *     @Environment(\.modelContext) var modelContext
- *
- *     var body: some View {
- *         GeometryReader { geometry in
- *             switch viewModel.videoIdStatus {
- *             case .notStarted:
- *                 EmptyView()
- *             case .fetching:
- *                 ProgressView()
- *             case .success:
- *                 ScrollView {
- *                     LazyVStack(alignment: .leading) {
- *                         YoutubePlayer(videoId: viewModel.videoId)
- *                         Text(titleName).bold()
- *                         Text(title.overview ?? "")
- *                         Button { // Download }
- *                     }
- *                 }
- *             case .failed(let error):
- *                 Text(error.localizedDescription)
- *             }
- *         }
- *         .task {
- *             await viewModel.getVideoId(for: titleName)
- *         }
- *     }
- * }
- * ```
- */
 @Composable
 fun TitleDetailScreen(
     titleId: Int,
@@ -125,9 +87,6 @@ fun TitleDetailScreen(
     }
 }
 
-/**
- * Detail content with YouTube player
- */
 @Composable
 private fun TitleDetailContent(
     title: Title,
@@ -205,9 +164,6 @@ private fun TitleDetailContent(
     }
 }
 
-/**
- * Detail content without video (fallback when video fails to load)
- */
 @Composable
 private fun TitleDetailContentWithoutVideo(
     title: Title,
@@ -244,83 +200,3 @@ private fun TitleDetailContentWithoutVideo(
         }
     }
 }
-
-
-/**
- * ============================================
- * DETAIL SCREEN COMPARISON
- * ============================================
- *
- * Video Player Integration:
- * -------------------------
- *
- * iOS:
- * ```swift
- * YoutubePlayer(videoId: viewModel.videoId)
- *     .aspectRatio(1.3, contentMode: .fit)
- * ```
- *
- * Android:
- * ```kotlin
- * YoutubePlayer(
- *     videoId = videoId,
- *     apiConfig = apiConfig,
- *     modifier = Modifier
- *         .fillMaxWidth()
- *         .height(220.dp)
- * )
- * ```
- *
- *
- * Save to Database:
- * -----------------
- *
- * iOS:
- * ```swift
- * Button {
- *     let saveTitle = title
- *     saveTitle.title = titleName
- *     modelContext.insert(saveTitle)
- *     try? modelContext.save()
- *     dismiss()
- * }
- * ```
- *
- * Android:
- * ```kotlin
- * GhostButton(
- *     text = "Download",
- *     onClick = {
- *         viewModel.saveTitle(title)
- *     }
- * )
- *
- * // In ViewModel:
- * fun saveTitle(title: Title) {
- *     viewModelScope.launch {
- *         repository.saveTitle(title)
- *     }
- * }
- * ```
- *
- *
- * Loading Video ID:
- * -----------------
- *
- * iOS:
- * ```swift
- * .task {
- *     await viewModel.getVideoId(for: titleName)
- * }
- * ```
- *
- * Android:
- * ```kotlin
- * LaunchedEffect(title) {
- *     viewModel.loadVideoId(title.displayTitle)
- * }
- * ```
- *
- * LaunchedEffect = Runs side effects in composition
- * Similar to .task in SwiftUI
- */

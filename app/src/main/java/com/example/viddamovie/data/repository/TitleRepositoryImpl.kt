@@ -15,19 +15,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-/**
- * Implementation of TitleRepository
- *
- * iOS Equivalent: Your DataFetcher + ViewModel combined
- *
- * Purpose: Actual implementation of data operations
- * - Makes API calls via Retrofit services
- * - Converts DTOs to domain models
- * - Handles errors
- * - Manages database operations
- *
- * @Inject constructor: Hilt provides all dependencies automatically!
- */
 class TitleRepositoryImpl @Inject constructor(
     private val tmdbApi: TmdbApiService,
     private val youtubeApi: YoutubeApiService,
@@ -35,17 +22,6 @@ class TitleRepositoryImpl @Inject constructor(
     private val apiConfig: ApiConfig
 ) : TitleRepository {
 
-    /**
-     * Get trending movies from TMDB API
-     *
-     * iOS Equivalent:
-     * ```swift
-     * trendingMovies = try await dataFetcher.fetchTitles(
-     *     for: "movie",
-     *     by: "trending"
-     * )
-     * ```
-     */
     override suspend fun getTrendingMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTrending(
@@ -56,9 +32,6 @@ class TitleRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Get trending TV shows
-     */
     override suspend fun getTrendingTV(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTrending(
@@ -69,9 +42,6 @@ class TitleRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Get top rated movies
-     */
     override suspend fun getTopRatedMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTopRated(
@@ -82,9 +52,6 @@ class TitleRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Get top rated TV shows
-     */
     override suspend fun getTopRatedTV(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getTopRated(
@@ -95,9 +62,6 @@ class TitleRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Get upcoming movies
-     */
     override suspend fun getUpcomingMovies(): Result<List<Title>> {
         return safeApiCall {
             val response = tmdbApi.getUpcoming(
