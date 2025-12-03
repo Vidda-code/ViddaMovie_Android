@@ -56,18 +56,9 @@ fun AppNavigation() {
                 )
             ) { backStackEntry ->
                 val titleId = backStackEntry.arguments?.getInt("titleId") ?: 0
-                // TODO: Inject ApiConfig properly via Hilt
-                // For now, we'll load it here (not ideal but works)
                 TitleDetailScreen(
                     titleId = titleId,
-                    navController = navController,
-                    apiConfig = ApiConfig(
-                        tmdbBaseURL = "",
-                        tmdbApiKey = "",
-                        youtubeBaseURL = "https://www.youtube.com/embed",
-                        youtubeApiKey = "",
-                        youtubeSearchURL = ""
-                    )
+                    navController = navController
                 )
             }
         }

@@ -3,6 +3,7 @@ package com.example.viddamovie.ui.screens.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.viddamovie.data.repository.ApiConfig
 import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.domain.repository.TitleRepository
 import com.example.viddamovie.ui.viewmodel.VideoUiState
@@ -13,17 +14,34 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel for Title Detail screen
+ *
+ * iOS Equivalent: Part of ViewModel.swift (videoId related code)
+ */
 @HiltViewModel
 class TitleDetailViewModel @Inject constructor(
     private val repository: TitleRepository,
+    private val apiConfig: ApiConfig,  // Inject ApiConfig here!
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    /**
+     * Video ID state for YouTube player
+     */
     private val _videoState = MutableStateFlow<VideoUiState>(VideoUiState.Loading)
     val videoState: StateFlow<VideoUiState> = _videoState.asStateFlow()
 
+    /**
+     * Save result state
+     */
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
     val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
+
+    /**
+     * API Config for YouTube player
+     */
+    val youtubeConfig: ApiConfig = apiConfig
 
     fun loadVideoId(titleName: String) {
         viewModelScope.launch {

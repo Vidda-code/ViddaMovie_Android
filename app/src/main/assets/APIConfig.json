@@ -3,5 +3,5 @@
   "tmdbAPIKey": "de6ed396dd5b853e0404384cd8b0baa0",
   "youtubeBaseURL": "https://www.youtube.com/embed",
   "youtubeAPIKey": "AIzaSyCXHi7FlOgzQwSpM62lGQB44tvEeGrZFeI",
-  "youtubeSearchURL": "https://www.googleapis.com/youtube/v3/search"
+  "youtubeSearchURL": "https://www.googleapis.com/youtube/v3/search/"
 }
