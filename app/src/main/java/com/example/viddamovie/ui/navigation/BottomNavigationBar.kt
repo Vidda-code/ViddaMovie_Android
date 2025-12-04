@@ -3,10 +3,12 @@ package com.example.viddamovie.ui.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.PlayCircleOutline
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +20,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 data class BottomNavItem(
     val route: String,
-    val icon: ImageVector,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
     val label: String
 )
 
@@ -27,22 +30,26 @@ fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem(
             route = Screen.Home.route,
-            icon = Icons.Default.Home,
+            selectedIcon = Icons.Filled.Home,
+            unselectedIcon = Icons.Outlined.Home,
             label = "Home"
         ),
         BottomNavItem(
             route = Screen.Upcoming.route,
-            icon = Icons.Default.PlayCircleOutline,
+            selectedIcon = Icons.Filled.PlayCircleOutline,
+            unselectedIcon = Icons.Outlined.PlayCircleOutline,
             label = "Upcoming"
         ),
         BottomNavItem(
             route = Screen.Search.route,
-            icon = Icons.Default.Search,
+            selectedIcon = Icons.Filled.Search,
+            unselectedIcon = Icons.Outlined.Search,
             label = "Search"
         ),
         BottomNavItem(
             route = Screen.Download.route,
-            icon = Icons.Default.Download,
+            selectedIcon = Icons.Filled.Download,
+            unselectedIcon = Icons.Outlined.Download,
             label = "Download"
         )
     )
@@ -52,25 +59,23 @@ fun BottomNavigationBar(navController: NavHostController) {
 
     NavigationBar {
         items.forEach { item ->
+            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
             NavigationBarItem(
                 icon = {
                     Icon(
-                        imageVector = item.icon,
+                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
                         contentDescription = item.label
                     )
                 },
                 label = { Text(item.label) },
-                selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                selected = selected,
                 onClick = {
                     navController.navigate(item.route) {
-                        // Pop up to the start destination
                         popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                            saveState = false // Do not save state
                         }
-                        // Avoid multiple copies of the same destination
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
-                        restoreState = true
+                        restoreState = false // Do not restore state
                     }
                 }
             )

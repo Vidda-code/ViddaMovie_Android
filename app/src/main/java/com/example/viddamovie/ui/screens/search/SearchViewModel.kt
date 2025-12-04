@@ -6,12 +6,12 @@ import com.example.viddamovie.domain.model.Title
 import com.example.viddamovie.domain.repository.TitleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -38,11 +38,10 @@ class SearchViewModel @Inject constructor(
     private val _isSearchingMovies = MutableStateFlow(true)
     val isSearchingMovies: StateFlow<Boolean> = _isSearchingMovies.asStateFlow()
 
-    init {
-        // Load trending movies initially (when search is empty)
-        loadTrending()
+    private var searchJob: Job? = null
 
-        // Set up search query debouncing
+    init {
+        // Load trending movies initially and set up search query debouncing
         setupSearchDebouncing()
     }
 
@@ -51,13 +50,7 @@ class SearchViewModel @Inject constructor(
         searchQuery
             .debounce(500)  // Wait 500ms after user stops typing
             .distinctUntilChanged()  // Only search if query actually changed
-            .onEach { query ->
-                if (query.isEmpty()) {
-                    loadTrending()
-                } else {
-                    performSearch(query)
-                }
-            }
+            .onEach { executeSearch() }
             .launchIn(viewModelScope)
     }
 
@@ -66,63 +59,42 @@ class SearchViewModel @Inject constructor(
     }
 
     fun toggleMediaType() {
-        _isSearchingMovies.value = !_isSearchingMovies.value
-
+        _isSearchingMovies.update { !it }
         // Re-search with new media type
-        val currentQuery = _searchQuery.value
-        if (currentQuery.isEmpty()) {
-            loadTrending()
-        } else {
-            performSearch(currentQuery)
-        }
+        executeSearch()
     }
 
-    private fun loadTrending() {
-        viewModelScope.launch {
+    private fun executeSearch() {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
+            val query = searchQuery.value
 
-            val result = if (_isSearchingMovies.value) {
-                repository.getTrendingMovies()
-            } else {
-                repository.getTrendingTV()
-            }
-
-            result.fold(
-                onSuccess = { titles ->
-                    _searchResults.value = titles
-                    _isLoading.value = false
-                },
-                onFailure = { error ->
-                    _errorMessage.value = error.message
-                    _isLoading.value = false
+            val result = if (query.isBlank()) {
+                if (isSearchingMovies.value) {
+                    repository.getTrendingMovies()
+                } else {
+                    repository.getTrendingTV()
                 }
-            )
-        }
-    }
-
-    private fun performSearch(query: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-
-            val result = if (_isSearchingMovies.value) {
-                repository.searchMovies(query)
             } else {
-                repository.searchTV(query)
+                if (isSearchingMovies.value) {
+                    repository.searchMovies(query)
+                } else {
+                    repository.searchTV(query)
+                }
             }
 
             result.fold(
                 onSuccess = { titles ->
                     _searchResults.value = titles
-                    _isLoading.value = false
                 },
                 onFailure = { error ->
                     _errorMessage.value = error.message
                     _searchResults.value = emptyList()
-                    _isLoading.value = false
                 }
             )
+            _isLoading.value = false
         }
     }
 }

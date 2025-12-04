@@ -9,6 +9,7 @@ import com.example.viddamovie.util.Constants
 fun TitleDto.toDomain(explicitMediaType: MediaType? = null): Title? {
     // Must have valid ID to be useful
     val validId = id ?: return null
+    val media = explicitMediaType ?: MediaType.fromString(mediaType)
 
     return Title(
         id = validId,
@@ -18,9 +19,9 @@ fun TitleDto.toDomain(explicitMediaType: MediaType? = null): Title? {
         // Transform poster path to full URL
         posterPath = posterPath?.let { Constants.getFullPosterUrl(it) },
         backdropPath = backdropPath?.let { Constants.getFullPosterUrl(it) },
-        releaseDate = releaseDate,
+        releaseDate = if (media == MediaType.TV) firstAirDate else releaseDate,
         voteAverage = voteAverage,
-        mediaType = explicitMediaType ?: MediaType.fromString(mediaType)
+        mediaType = media
     )
 }
 

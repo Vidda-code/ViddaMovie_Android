@@ -16,7 +16,6 @@ import com.example.viddamovie.ui.screens.home.HomeScreen
 import com.example.viddamovie.ui.screens.search.SearchScreen
 import com.example.viddamovie.ui.screens.upcoming.UpcomingScreen
 
-
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -49,19 +48,15 @@ fun AppNavigation() {
 
             // Detail screen with title ID and mediaType arguments
             composable(
-                route = "detail/{titleId}/{mediaType}",
+                route = Screen.Detail.route,
                 arguments = listOf(
                     navArgument("titleId") { type = NavType.IntType },
                     navArgument("mediaType") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
                 val titleId = backStackEntry.arguments?.getInt("titleId") ?: 0
-                val mediaTypeString = backStackEntry.arguments?.getString("mediaType") ?: "MOVIE"
-                val mediaType = try {
-                    MediaType.valueOf(mediaTypeString)
-                } catch (e: IllegalArgumentException) {
-                    MediaType.MOVIE // Default fallback
-                }
+                val mediaTypeString = backStackEntry.arguments?.getString("mediaType")
+                val mediaType = mediaTypeString?.let { MediaType.valueOf(it) } ?: MediaType.MOVIE
 
                 TitleDetailScreen(
                     titleId = titleId,
