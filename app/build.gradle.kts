@@ -84,15 +84,15 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.57.2")
 
     // Hilt Navigation Compose (for hiltViewModel())
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
 
     // Room Database (Local Storage)
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.8.4")
+    implementation("androidx.room:room-ktx:2.8.4")
+    ksp("androidx.room:room-compiler:2.8.4")
 
     // OkHttp Logging Interceptor (for debugging network calls)
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
     // YouTube Player (for displaying trailers)
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
