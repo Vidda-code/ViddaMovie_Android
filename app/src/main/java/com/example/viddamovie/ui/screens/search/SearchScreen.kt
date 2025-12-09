@@ -1,16 +1,30 @@
 package com.example.viddamovie.ui.screens.search
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -34,20 +48,17 @@ fun SearchScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isSearchingMovies by viewModel.isSearchingMovies.collectAsState()
 
-    Scaffold(
-        topBar = {
-            SearchTopBar(
-                searchQuery = searchQuery,
-                isSearchingMovies = isSearchingMovies,
-                onSearchQueryChange = viewModel::onSearchQueryChange,
-                onToggleMediaType = viewModel::toggleMediaType
-            )
-        }
-    ) { paddingValues ->
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchTopBar(
+            searchQuery = searchQuery,
+            isSearchingMovies = isSearchingMovies,
+            onSearchQueryChange = viewModel::onSearchQueryChange,
+            onToggleMediaType = viewModel::toggleMediaType
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
         ) {
             when {
                 isLoading -> {
@@ -79,35 +90,31 @@ private fun SearchTopBar(
     onSearchQueryChange: (String) -> Unit,
     onToggleMediaType: () -> Unit
 ) {
-    TopAppBar(
-        title = {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = onSearchQueryChange,
-                onSearch = { /* Handled by debouncing */ },
-                active = false,
-                onActiveChange = { },
-                placeholder = {
-                    Text(
-                        if (isSearchingMovies) {
-                            "Search for a Movie"
-                        } else {
-                            "Search for a TV Show"
-                        }
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // No search suggestions
-            }
+    SearchBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        query = searchQuery,
+        onQueryChange = onSearchQueryChange,
+        onSearch = { /* Handled by debouncing */ },
+        active = false,
+        onActiveChange = { },
+        placeholder = {
+            Text(
+                if (isSearchingMovies) {
+                    "Search for a Movie"
+                } else {
+                    "Search for a TV Show"
+                }
+            )
         },
-        actions = {
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search"
+            )
+        },
+        trailingIcon = {
             IconButton(onClick = onToggleMediaType) {
                 Icon(
                     imageVector = if (isSearchingMovies) {
@@ -119,7 +126,9 @@ private fun SearchTopBar(
                 )
             }
         }
-    )
+    ) {
+        // No search suggestions
+    }
 }
 
 @Composable

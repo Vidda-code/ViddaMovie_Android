@@ -96,4 +96,7 @@ dependencies {
 
     // YouTube Player (for displaying trailers)
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
+
+    // Splash Screen
+    implementation("androidx.core:core-splashscreen:1.2.0")
 }
